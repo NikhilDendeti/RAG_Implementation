@@ -64,23 +64,29 @@ def upload_embeddings(chunks):
 
 # Call the Groq API for generating responses
 def get_groq_response(prompt):
+    refined_prompt = f"You are a domain-specific expert chatbot. Answer only if the question pertains to the provided context; otherwise, politely decline. {prompt}"
     completion = client.chat.completions.create(
         model=GROQ_MODEL,
-        messages=[{"role": "user", "content": prompt}],
-        temperature=1,
-        max_tokens=1024,
-        top_p=1,
-        stream=True,
+        messages=[{"role": "user", "content": refined_prompt}],
+        temperature=0.7,
+        max_tokens=512,
+        top_p=0.9,
+        stream=False,
         stop=None,
     )
-    response = ""
-    for chunk in completion:
-        response += chunk.choices[0].delta.content or ""
+
+    # Handle the response structure
+    try:
+        response = completion.choices[0].message.content
+    except AttributeError:
+        response = "Error: Unexpected response format. Please check the completion object."
+
     return response
+
 
 # Generate a hypothetical document using Groq
 def generate_hypothetical_doc(question):
-    prompt = f"Write a hypothetical context based on the question: {question}"
+    prompt = f"Write a comprehensive, hypothetical context based on the question: {question}"
     return get_groq_response(prompt)
 
 # Perform sparse retrieval (keyword-based search)
@@ -119,7 +125,12 @@ def rerank_results(query_embedding, results):
 # Generate the final answer using retrieved and reranked documents
 def generate_answer(question, reranked_docs):
     context = " ".join([doc.payload["text"] for doc in reranked_docs])
-    prompt = f"Say that the question is inappropriate if the question is not relevant to the context. Context: {context}\n\nQuestion: {question}\n\nAnswer:"
+    prompt = (
+        f"Context: {context}\n\n"
+        f"Question: {question}\n\n"
+        "Answer as a helpful, knowledgeable assistant. If the question is irrelevant, respond with: "
+        "'This question does not relate to the provided content.'"
+    )
     return get_groq_response(prompt)
 
 # Main function to execute the RAG pipeline
@@ -147,6 +158,6 @@ def execute_rag_pipeline(pdf_path, question, k=5):
 # Example usage
 if __name__ == "__main__":
     pdf_path = "Insurance Industry _ Report.pdf"
-    question = "Explain me about internal controls, risk management systems, regulatory compliance, and measures to prevent or address fraud, misconduct, and other legal issues within the insurance sector, particularly focusing on InsurTech and green insurance initiatives"
+    question = "Who is Nikhil Dendeti?"
     result = execute_rag_pipeline(pdf_path, question)
     print(result["Answer"])
