@@ -1,15 +1,11 @@
-langchain==0.0.37
-transformers==4.30.0
-qdrant-client==1.7.1
-sentence-transformers==2.2.0
-pymupdf==1.18.19
-python-dotenv==1.0.0
-torch==2.1.0+cpu  # or +cu118 for GPU support, depending on your setup
-langchain-community==0.0.2
-huggingface_hub==0.15.1
-qdrant-client
-fitz==0.0.1.dev2
-python-dotenv
-llama-index
-transformers
-torch
+langchain>=0.0.37
+transformers>=4.30.0
+qdrant-client>=1.7.1
+sentence-transformers>=2.2.0
+pymupdf>=1.18.19
+python-dotenv>=1.0.0
+torch>=2.1.0
+huggingface_hub>=0.15.1
+fitz>=0.0.1.dev2
+langchain-community>=0.0.2
+streamlit
